@@ -3,7 +3,6 @@ package fxabc2;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.media.Media;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -42,6 +41,10 @@ public class iterateN extends MainAppli{
 	static final double Space	= 48.0;	//x方向の箱と箱の間隔
 	static final int UP = 0;	//上段を示すサフィクス
 	static final int LW = 1;	//下段を示すサフィクス
+	
+	static final String SndWalk = "footstep02.wav";//歩く音from魔王魂
+	static final String SndDopon = "waterdopon.wav";//水に落ちる音
+	static final String SndOk = "ok.wav";//マンホールを踏んだ音
 
 	private walkingMan[][] _wm = new walkingMan[2][numOfBox];
 	private byte _mh;//マンホールのフタの位置記号
@@ -65,7 +68,28 @@ public class iterateN extends MainAppli{
 			getwkm(LW, i).init(LW, i);		// _wmの初期化
 		}
 		set_mh(LU);				// manHoleの初期化・・最初は左上にフタを置いた
-		set_cnter(UP);			// cnterの初期化・・最初は上段
+		set_cnter(UP);			// カウンタcnterの初期化・・最初は上段
+
+	}
+	
+	static void SoundOk() {		//マンホールを踏んだ音
+		sound snd = new sound();
+		snd.str = SndOk;
+		Thread th = new Thread(snd);
+		th.start();
+	}	
+	static void SoundDopon() {	//水に落ちる音
+		sound snd = new sound();
+		snd.str = SndDopon;
+		Thread th = new Thread(snd);
+		th.start();
+	}
+	
+	static void SoundWalk() {	//歩く音from魔王魂
+		sound snd = new sound();
+		snd.str = SndWalk;
+		Thread th = new Thread(snd);
+		th.start();
 	}
 
 	@Override protected void ofMain(GraphicsContext gc) {
@@ -76,11 +100,7 @@ public class iterateN extends MainAppli{
 		//上段の場合
 		if(get_cnter()==UP) {
 
-			//歩く音select01.mp3
-//			Media someSound = new Media(getClass().
-//					getResource("select01.mp3").toString());
-//			MediaPlayer mp = new MediaPlayer(someSound);
-//			mp.play();
+		SoundWalk();	//歩く音
 
 			for(int i=0; i<numOfBox; i++) {
 				getwkm(UP,i).update();	//箱の位置を進める
@@ -102,11 +122,7 @@ public class iterateN extends MainAppli{
 			
 		//下段の場合
 		else {
-			//歩く音select02.mp3
-//			Media someSound = new Media(getClass().
-//					getResource("select02.mp3").toString());
-//			MediaPlayer mp = new MediaPlayer(someSound);
-//			mp.play();
+			SoundWalk();	//歩く音
 
 			for(int i=0; i<numOfBox; i++) {
 				getwkm(LW,i).update();	//下段の箱の位置を進める
@@ -174,10 +190,10 @@ public class iterateN extends MainAppli{
 	}
 
 	//Media mの音を鳴らす
-	private void playMedia(Media m){
-	       if (m != null){
-	       }
-	}
+//	private void playMedia(Media m){
+//	       if (m != null){
+//	       }
+//	}
 
 	//	ゲッター(getter)/セッター(setter)
 	public walkingMan getwkm(int line, int index) {
