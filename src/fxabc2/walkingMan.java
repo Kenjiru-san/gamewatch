@@ -39,8 +39,8 @@ public class walkingMan{
 	}
 
 	//箱に人が入っている場合に描画する
-	public void draw(GraphicsContext gc) {
-		gc.setFill(Color.RED); // 色を設定（赤）
+	public void draw(GraphicsContext gc,Color crl) {
+		gc.setFill(crl); // 色を設定（赤）
 		gc.setFont(new Font("System",48)); // フォントサイズを設定
 		if(get_line()==UP && get_isMan()==true) 
 			gc.fillText("人", get_x(), UpperY);

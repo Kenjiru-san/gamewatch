@@ -28,6 +28,7 @@ public class sound implements Runnable{
 		}
         clip.drain();
         clip.stop();
+//        clip.close();
 	}
 
 	public static Clip createClip(File path) {

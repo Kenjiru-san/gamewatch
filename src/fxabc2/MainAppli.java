@@ -35,6 +35,7 @@ public class MainAppli extends Application {
 		
 		Thread thread = new Thread(() -> { // メインスレッド
 			int i=0;
+			int j=0; int k=0;//Thread.sleepの間隔を、j,Kを使って早めていく
 			while(true) {
 				i++;if(i==15)i=0;
 				if(i==1)
@@ -42,8 +43,10 @@ public class MainAppli extends Application {
 					ofMain(gc);
 				});
 				
+				j++;if(j%10==0)k++;//jが10増えると、kが1増える
+				if(k>55) k=55;//kは55までしか増えない
 				try {
-					Thread.sleep(100);
+					Thread.sleep(70-k);//だんだん早くなる
 				}catch(Exception e) {
 				}
 			}
