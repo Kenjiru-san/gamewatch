@@ -2,6 +2,7 @@ package fxabc2;
 
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -45,13 +46,18 @@ public class iterateN extends MainAppli{
 	static final String SndWalk = "footstep02.wav";//歩く音from魔王魂
 	static final String SndDopon = "waterdopon.wav";//水に落ちる音
 	static final String SndOk = "ok.wav";//マンホールを踏んだ音
+	
+	static Image[] imgN = new Image[4];
+	static Image[] imgB = new Image[4];
+	static Image[] imgG = new Image[4];
+	static Image[] imgR = new Image[4];
 
 	private walkingMan[][] _wm = new walkingMan[2][numOfBox];
 	private byte _mh;//マンホールのフタの位置記号
 	private double _mhx;//マンホールのフタのx座標
 	private double _mhy;//マンホールのフタのy座標
 	private int _cnter;//上段、下段の箱を順に動かすためのカウンタ
-	private Color _clr;//人の色
+	private Color _clr;//人の文字色
 	
 	private boolean _isDopon = false;//マンホールに人が落ちたらtrue、誰も落ちなければfalse
 	private int _point = 0;//点数。助けたら、10点プラス。
@@ -74,6 +80,16 @@ public class iterateN extends MainAppli{
 		}
 		set_mh(LU);				// manHoleの初期化・・最初は左上にフタを置いた
 		set_cnter(UP);			// 上段、下段を示すカウンタ_cnterの初期化・・最初は上段
+		
+		//人のImageコンストラクタ設定、i=0:上段その１、i=1：上段その２、i=2：下段その１、i=3：下段その２
+		for (int i=0; i<4; i++)
+			imgN[i] = new Image("/walk" + (i+1) + ".png", false);//黒の人の設定
+		for (int i=0; i<4; i++)
+			imgB[i] = new Image("/walkb" + (i+1) + ".png", false);//青の人の設定
+		for (int i=0; i<4; i++)
+			imgG[i] = new Image("/walkg" + (i+1) + ".png", false);//緑の人の設定
+		for (int i=0; i<4; i++)
+			imgR[i] = new Image("/walkr" + (i+1) + ".png", false);//赤の人の設定
 	}
 	
 	static void SoundOk() {		//マンホールを踏んだ音
@@ -180,13 +196,12 @@ public class iterateN extends MainAppli{
 				if ( getwkm(LW,i).get_pos()==9 //マンホール穴位置(9)の箱に
 						&& getwkm(LW,i).get_isMan()) {//人が居る。
 					
-					if (get_mh()!=RL) {		//フタがRLに無い場合、落ちる
+					//落ちた場合の処理
+					if (get_mh()!=RL) 	//フタがRLに無い場合、落ちる
 						dopon();//落ちる音＋_isDopon=true＋_lifeを減らす
-					}
-					else {
-						SoundOk();			//Okの音
-						System.out.println("OK!!");
-					}
+					
+					//フタがあって、OKだった場合の処理
+					else OK();
 				}
 			}
 			set_cnter(UP);
@@ -197,12 +212,15 @@ public class iterateN extends MainAppli{
 			
 			//人を描画
 			//箱番号によって、人の色分け・・3で割ってゼロなら赤、1なら緑、2なら青
-			if (i%3==0) set_clr(Color.DARKSALMON);
-			  else if(i%3==1) set_clr(Color.GREEN);
-			  else set_clr(Color.NAVY);
+//			if (i%3==0) set_clr(Color.DARKSALMON);
+//			  else if(i%3==1) set_clr(Color.GREEN);
+//			  else set_clr(Color.NAVY);
 			
-			getwkm(UP,i).draw(gc,get_clr());//上段の箱に人が入っている場合に描画
-			getwkm(LW,i).draw(gc,get_clr());//下段の箱に人が入っている場合に描画
+//			getwkm(UP,i).draw(gc,get_clr());//上段の箱に人が入っている場合に描画：Ver0
+//			getwkm(LW,i).draw(gc,get_clr());//下段の箱に人が入っている場合に描画：Ver0
+			
+			getwkm(UP,i).drawman(gc,i);//上段の箱に人が入っている場合に描画：Ver1
+			getwkm(LW,i).drawman(gc,i);//下段の箱に人が入っている場合に描画：Ver1
 
 			//穴の開いた道路を描画
 			gc.setFill(Color.BLACK); 	// 色を設定（黒）
@@ -223,9 +241,8 @@ public class iterateN extends MainAppli{
 	//OKだった時の処理
 	public void OK() {
 		SoundOk();			//Okの音
-		System.out.println("OK!!");
 		set_point(get_point()+10);//10点プラス。
-		System.out.println("POINT:" + _point);
+		System.out.println("OK!! POINT:" + _point);
 	}
 	
 	//落ちた時の処理・・・・・いったん止めて、再始動させたい
@@ -234,7 +251,7 @@ public class iterateN extends MainAppli{
 		SoundDopon();		//落ちる音
 		System.out.println("落ちた");
 		if(get_life()==1) {	//残りの寿命が1つしかないときは、
-			System.out.println("終了");//終了処理
+			System.out.println("終了。POINT:" + get_point());//終了処理
 			Platform.exit();//終了
 		} else {
 			set_life(get_life() - 1);//寿命をマイナス１する。

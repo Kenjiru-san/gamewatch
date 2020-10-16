@@ -38,9 +38,10 @@ public class MainAppli extends Application {
 			int j=0; int k=0;//Thread.sleepの間隔を、j,Kを使って早めていく
 			while(true) {
 				i++;if(i==15)i=0;
-				if(i==1)
-				Platform.runLater(() -> {
-					ofMain(gc);
+				
+				if(i==1)	//i=1のとき、箱の位置を進めてマンホール落ちたかどうか判断
+					Platform.runLater(() -> {
+						ofMain(gc);
 				});
 				
 				j++;if(j%10==0)k++;//jが10増えると、kが1増える
@@ -49,6 +50,13 @@ public class MainAppli extends Application {
 					Thread.sleep(70-k);//だんだん早くなる
 				}catch(Exception e) {
 				}
+				
+//				if(i==7)	//i=7のとき、音をさせず、箱を半分だけ進める・・を追加したい
+//					Platform.runLater(arg0);
+//				try {
+//					Thread.sleep(70-k);//だんだん早くなる
+//				}catch(Exception e) {
+//				}
 			}
 		});
 		thread.setDaemon(getIsDaemon()); // スレッドをデーモン化
