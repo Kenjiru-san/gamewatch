@@ -24,7 +24,6 @@ import javafx.scene.text.Font;
  */
 
 public class iterateN extends MainAppli{
-
 	static final int WIDTH 	= 640;
 	static final int HEIGHT = 480;
 	static final int FPS 	= 1; //Frame per Second,1秒当たりのフレーム数
@@ -63,6 +62,9 @@ public class iterateN extends MainAppli{
 	private int _point = 0;//点数。助けたら、10点プラス。
 	private int _life = 3;//寿命。最初は3。マンホールに落ちたら、マイナス1。ゼロになったら終了。
 	
+	public static void main(String[] args) {
+		launch(args);
+	}
 	@Override public void init() {//初期化メソッド
 		setScWidth(WIDTH);
 		setScHeight(HEIGHT);
@@ -112,7 +114,7 @@ public class iterateN extends MainAppli{
 		th.start();
 	}
 
-	@Override protected void ofMain(GraphicsContext gc) {
+	@Override protected void ofMain(GraphicsContext gc, String player) {
 		gc.clearRect(0, 0, WIDTH, HEIGHT);	// 全画面をクリア
 		
 		//箱の位置を進める＆一番後ろの箱に50%確率で人を入れる
@@ -230,13 +232,19 @@ public class iterateN extends MainAppli{
 				gc.fillText("＿", (double)j*Space, UpperY);//上段の道路を描画
 				gc.fillText("＿", (double)j*Space, LowerY);//下段の道路を描画
 			}
-			
 		}
 		//マンホールのフタを描画
 		gc.setFill(Color.GREEN);// 色を設定（緑色）
 		gc.setFont(new Font("System Bold",48)); 	// フォントの型、サイズを設定
 		gc.fillText("＿", get_mhx(), get_mhy());		// フタを描画
-	}
+
+		//LifeとPointを書く
+		gc.setFill(Color.PURPLE);// 色を設定（緑色）
+		gc.setFont(new Font("System Bold",48)); 	// フォントの型、サイズを設定
+		gc.fillText("Life: "+get_life()+"    Point: "+get_point(), 10, 380);
+		gc.setFill(Color.RED);// 色を設定（緑色）
+		gc.fillText(player, 10, 430);
+}
 	
 	//OKだった時の処理
 	public void OK() {
@@ -282,10 +290,8 @@ public class iterateN extends MainAppli{
 		}
 	}
 	
-	
 	@Override protected void ofKeyReleased(KeyEvent e) {
 	}
-
 
 	//	ゲッター(getter)/セッター(setter)
 	public walkingMan getwkm(int line, int index) {

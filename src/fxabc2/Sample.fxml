@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.Glow?>
+<?import javafx.scene.effect.SepiaTone?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" prefHeight="325.0" prefWidth="565.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fxabc2.smplController">
+    <children>
+        <Button fx:id="button" layoutX="381.0" layoutY="246.0" onAction="#handleButtonAction" prefHeight="48.0" prefWidth="144.0" text="スタート" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
+         <cursor>
+            <Cursor fx:constant="MOVE" />
+         </cursor>
+         <effect>
+            <SepiaTone level="0.5">
+               <input>
+                  <Glow />
+               </input></SepiaTone>
+         </effect>
+         <font>
+            <Font size="25" />
+         </font></Button>
+        <Label fx:id="instLavel" layoutX="21.0" layoutY="90.0" minHeight="16" minWidth="69" prefHeight="210.0" prefWidth="346.0" text="Instruction">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
+      <ImageView fx:id="Photo" fitHeight="117.0" fitWidth="169.0" layoutX="394.0" layoutY="104.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../walk01.png" />
+         </image></ImageView>
+      <Label fx:id="nameLabel" layoutX="35.0" layoutY="29.0" text="Your Name">
+         <font>
+            <Font size="18.0" />
+         </font></Label>
+      <TextField fx:id="nameField" layoutX="125.0" layoutY="56.0">
+         <font>
+            <Font size="18.0" />
+         </font></TextField>
+    </children>
+</AnchorPane>

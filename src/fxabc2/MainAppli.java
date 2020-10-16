@@ -1,8 +1,12 @@
 package fxabc2;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -20,18 +24,43 @@ public class MainAppli extends Application {
 	private int			_fps		= 200; // 固定値FPS（デフォルト値： 60）
 	private boolean		_isDaemon	= true; // デーモン化（デフォルト値： true）
 	
+	private Stage stg;
+    public static MainAppli singleton;
+
 	@Override public void start(Stage stage) {
-		Group root = new Group(); // Groupを作成
+    	singleton = this;//このインスタンスのコピーがないとgameWinndowは動かない。
+    	stg = stage;
+    	StartWindow();
+	}
+	
+    public static MainAppli getInstance(){
+		return singleton;
+	}
+
+	public void StartWindow() {
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("Sample.fxml"));
+			Parent prnt = loader.load();
+	        Scene scene = new Scene(prnt);
+	        stg.setTitle("Man Hole Man");
+	        stg.setScene(scene);
+	        stg.show();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void GameWindow(String player){
+	    Group root = new Group();
 		Scene scene = new Scene(root, getScWidth(), getScHeight(), getBackColor()); // Sceneを作成
-		
 		Canvas canvas = new Canvas(getCvWidth(), getCvHeight()); // Canvasを作成
 		GraphicsContext gc = canvas.getGraphicsContext2D(); // GraphicsContextを取得
-		
+
 		root.getChildren().add(canvas); // Canvasを追加
-		
-		stage.setScene(scene); // Sceneを追加
-		stage.setTitle("Man Hole Man /JavaFX!");
-		stage.show(); // ウィンドウを表示
+		stg.setScene(scene); // Sceneを追加
+
+		stg.setTitle("Man Hole Man /JavaFX!");
+		stg.show(); // ウィンドウを表示
 		
 		Thread thread = new Thread(() -> { // メインスレッド
 			int i=0;
@@ -41,7 +70,7 @@ public class MainAppli extends Application {
 				
 				if(i==1)	//i=1のとき、箱の位置を進めてマンホール落ちたかどうか判断
 					Platform.runLater(() -> {
-						ofMain(gc);
+						ofMain(gc, player);
 				});
 				
 				j++;if(j%10==0)k++;//jが10増えると、kが1増える
@@ -70,7 +99,7 @@ public class MainAppli extends Application {
 		});
 	}
 	
-	protected void ofMain(GraphicsContext gc) {
+	protected void ofMain(GraphicsContext gc, String plyaer) {
 	}
 	
 	protected void ofKeyPressed(KeyEvent e, GraphicsContext gc) {
