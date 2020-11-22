@@ -17,8 +17,10 @@ public class walkingMan{
 	private int _line;//上段（UP）、下段（LW）の位置
 	private int _pos;//箱の位置。1～12の数字。 
 	private double _x;//箱の位置。GrahicsContext上のｘ座標。
+	private double _y;//
 	private boolean _isMan;//その人が居る（true）か、居ない（false）か。
 	private Image[] _img = new Image[4];//色付き人の絵の配列、4つで1セット
+	private byte _dopon;//その人が落ちた(NG)か、Ok(OK)か。もしくは、マンホールの上に来ていないNA。・・このﾌﾗｸﾞは、描画後に必ずNAに戻さねば。
 
 	//箱の位置の初期化。人は入っていない状態に初期化。
 	public void init(int l, int i) {
@@ -26,6 +28,7 @@ public class walkingMan{
 		set_pos(i+1);//1～12の整数
 		set_x(i*Space);//順番に間隔を開けて位置を設定
 		set_isMan(false);//人は入っていない 
+		set_dopon(NA);//最初はNA
 	}
 	
 	//箱の位置_posが先頭の場合は最後尾に回し、それ以外は（_pos,_x）を進める。
@@ -50,7 +53,7 @@ public class walkingMan{
 			gc.fillText("人", get_x(), LowerY);
 	}
 
-	//箱に人が入っている場合に描画する・・・バージョン1：人を絵で示す
+	//箱に人が入っている場合に描画する・・・バージョン1：人を絵で示す・・・・・_doponを使って、落ちた人も書きたい！！
 	public void drawman(GraphicsContext gc, int i) {
 		switch(i%4) {
 			case 0: set_img(imgN); 	break;
@@ -60,22 +63,39 @@ public class walkingMan{
 			default: System.out.println("error!");
 		}
 		
+		int j=0;
 		if(get_isMan()==true) {//人が箱に居る場合
 			if(get_pos()%2==0) { //箱が偶数位置の場合
-				if(get_line()==UP) //上段の場合
-					gc.drawImage(_img[0], get_x(), UpperY-48);
-				if(get_line()==LW) //下段の場合
-					gc.drawImage(_img[3], get_x(), LowerY-48);
+				if(get_line()==UP) {j=0; set_y(UpperY);}//上段の場合
+				if(get_line()==LW) {j=3; set_y(LowerY);}//下段の場合
 			}
 			else {				//箱が奇数位置の場合
-				if(get_line()==UP) //上段の場合
-					gc.drawImage(_img[1], get_x(), UpperY-48);
-				if(get_line()==LW) //下段の場合 
-					gc.drawImage(_img[2], get_x(), LowerY-48);
+				if(get_line()==UP) {j=1; set_y(UpperY);}//上段の場合
+				if(get_line()==LW) {j=2; set_y(LowerY);}//下段の場合 
 			}
+			if(get_dopon()==NG) { //落ちた場合
+				if(get_line()==UP)
+					gc.drawImage(imgUP, get_x(), get_y());//マンホールの中に人を描く
+				if(get_line()==LW)
+					gc.drawImage(imgLW, get_x(), get_y());//マンホールの中に人を描く
+				gc.setFill(Color.DARKSALMON);// 文字色を設定（ダークサーモン色）
+				gc.setFont(new Font("System Bold",24)); 	// フォントの型、サイズを設定
+				gc.fillText("どぽん！", get_x(), get_y()+48);		// どぽん！を記載
+				set_dopon(NA);//落ちたかどうかの判定をデフォルトNAに戻す
+				set_isMan(false);//人は居なくなる
+			}
+			else if(get_dopon()==OK) { //OKの場合
+				gc.drawImage(_img[j], get_x(), get_y()-48);//マンホールの上に人を描く
+				gc.setFill(Color.DARKSALMON);// 文字色を設定（ライトシアン）
+				gc.setFont(new Font("System Bold",24)); 	// フォントの型、サイズを設定
+				gc.fillText("セーフ！", get_x(), get_y());		// ＯＫ！を記載
+				set_dopon(NA);//落ちたかどうかの判定をデフォルトNAに戻す
+			}
+			else //NAの場合
+				gc.drawImage(_img[j], get_x(), get_y()-48);//マンホールの上に人を描く
 		}
 		
-		}
+	}
 	
 	//以下、GETTER/SETTER。
 	public Image[] get_img() {
@@ -110,5 +130,21 @@ public class walkingMan{
 	}
 	public void set_isMan(boolean _isMan) {
 		this._isMan = _isMan;
+	}
+
+	public byte get_dopon() {
+		return _dopon;
+	}
+
+	public void set_dopon(byte _dopon) {
+		this._dopon = _dopon;
+	}
+
+	public double get_y() {
+		return _y;
+	}
+
+	public void set_y(double _y) {
+		this._y = _y;
 	}
 }

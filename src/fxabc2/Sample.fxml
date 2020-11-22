@@ -26,7 +26,7 @@
          <font>
             <Font size="25" />
          </font></Button>
-        <Label fx:id="instLavel" layoutX="21.0" layoutY="90.0" minHeight="16" minWidth="69" prefHeight="210.0" prefWidth="346.0" text="Instruction">
+        <Label fx:id="instLabel" layoutX="21.0" layoutY="90.0" minHeight="16" minWidth="69" prefHeight="210.0" prefWidth="346.0" text='Instruction'>
          <font>
             <Font size="14.0" />
          </font></Label>

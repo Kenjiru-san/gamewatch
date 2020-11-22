@@ -12,6 +12,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class MainAppli extends Application {
@@ -50,7 +51,7 @@ public class MainAppli extends Application {
 		}
 	}
 	
-	public void GameWindow(String player){
+	public void GameWindow(Player plyr){
 	    Group root = new Group();
 		Scene scene = new Scene(root, getScWidth(), getScHeight(), getBackColor()); // Sceneを作成
 		Canvas canvas = new Canvas(getCvWidth(), getCvHeight()); // Canvasを作成
@@ -59,18 +60,18 @@ public class MainAppli extends Application {
 		root.getChildren().add(canvas); // Canvasを追加
 		stg.setScene(scene); // Sceneを追加
 
-		stg.setTitle("Man Hole Man /JavaFX!");
+		stg.setTitle("Man Hole Man /JavaFX");
 		stg.show(); // ウィンドウを表示
 		
 		Thread thread = new Thread(() -> { // メインスレッド
 			int i=0;
 			int j=0; int k=0;//Thread.sleepの間隔を、j,Kを使って早めていく
-			while(true) {
+			while(plyr.isActive) {
 				i++;if(i==15)i=0;
 				
-				if(i==1)	//i=1のとき、箱の位置を進めてマンホール落ちたかどうか判断
+				if(i==1|| !plyr.isActive)	//i=1のとき、箱の位置を進めてマンホール落ちたかどうか判断
 					Platform.runLater(() -> {
-						ofMain(gc, player);
+						ofMain(gc, plyr);
 				});
 				
 				j++;if(j%10==0)k++;//jが10増えると、kが1増える
@@ -99,7 +100,32 @@ public class MainAppli extends Application {
 		});
 	}
 	
-	protected void ofMain(GraphicsContext gc, String plyaer) {
+	public void StopGame(Player player, GraphicsContext gc) {
+	    Group root = new Group();
+		Scene scene = new Scene(root, getScWidth(), getScHeight(), getBackColor()); // Sceneを作成
+		Canvas canvas = new Canvas(getCvWidth(), getCvHeight()); // Canvasを作成
+		gc = canvas.getGraphicsContext2D(); // GraphicsContextをCamvasに追加
+		root.getChildren().add(canvas); // Canvasを追加
+		stg.setScene(scene); // Sceneを追加
+
+		stg.setTitle("Man Hole Man/Game Over");
+		
+		gc.setFill(Color.DARKGRAY); // 色を設定（ダークグレー）
+		gc.setFont(new Font("System",24)); // フォントサイズを設定
+		gc.fillText(player.name + "のPoint: " + player.point
+				+ "\r\n   Press Any Key to End", 50, 100);
+
+//ここでPlayerのコンストラクタ・データを保存したい
+//ここでPlayerの初期化をしたい
+		
+		stg.show(); // ウィンドウを表示
+		
+		scene.setOnKeyPressed(e -> { // キー押下処理
+			Platform.exit();
+		});
+	}
+	
+	protected void ofMain(GraphicsContext gc, Player player) {
 	}
 	
 	protected void ofKeyPressed(KeyEvent e, GraphicsContext gc) {

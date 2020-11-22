@@ -12,7 +12,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 
 public class smplController implements Initializable{
-	String _player;
+	Player player = new Player();
+	String _name;
 	@FXML
     private Label instLabel ,nameLabel;
 	@FXML
@@ -23,23 +24,34 @@ public class smplController implements Initializable{
 	private Button button;
     @FXML
     private void handleButtonAction(ActionEvent event) {
+     	player.init();//player初期化
     	System.out.println("You clicked me!");
-       	set_player(nameField.getText());
-       	if(get_player() == null) set_player("none");
-       	MainAppli.getInstance().GameWindow(get_player());
+       	setname(nameField.getText());
+       	if("".equals(getname())) player.name = "none";
+       	else player.name = getname();
+
+       	MainAppli.getInstance().GameWindow(player);
     }
     
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		nameField.setPromptText("入力してください"); //未入力テキスト
+		nameField.setPromptText("名前を入力"); //未入力テキスト
 		nameField.setFocusTraversable(false); //フォーカスアウト
+		instLabel.setText("名前を入力し、スタート・ボタンを押してね！！"
+				+ "\r\n"
+				+ "\r\n" + "道路にマンホールが空いているので、歩行者が落ちないように"
+				+ "\r\n" + "マンホールのフタを動かして、ポイントをＧＥＴ！！"
+				+ "\r\n"
+				+ "\r\n" + "  Ｑ：左上       Ｐ：右上"
+				+ "\r\n" + "  Ａ：左下       Ｌ：右下"
+				);
 	}
 	
 	//以下、get/set
-	public String get_player() {
-		return _player;
+	public String getname() {
+		return _name;
 	}
-	public void set_player(String _player) {
-		this._player = _player;
+	public void setname(String name) {
+		this._name = name;
 	}
 }

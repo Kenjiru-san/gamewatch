@@ -41,8 +41,14 @@ public class iterateN extends MainAppli{
 	static final double Space	= 48.0;	//x方向の箱と箱の間隔
 	static final int UP = 0;	//上段を示すサフィクス
 	static final int LW = 1;	//下段を示すサフィクス
+
+	static final byte OK = 1;	//OKだった時の_dopon
+	static final byte NG = 0;	//NGだった時の_dopon
+	static final byte NA = 2;	//マンホールに来ていない時の_dopon
 	
-	static final String SndWalk = "footstep02.wav";//歩く音from魔王魂
+//	static final String SndWalk = "footstep02.wav";//歩く音from魔王魂
+	static final String SndwalkUP = "pi.wav";//上段歩く音、電子音
+	static final String SndwalkLW = "po.wav";//下段歩く音、電子音
 	static final String SndDopon = "waterdopon.wav";//水に落ちる音
 	static final String SndOk = "ok.wav";//マンホールを踏んだ音
 	
@@ -50,6 +56,8 @@ public class iterateN extends MainAppli{
 	static Image[] imgB = new Image[4];
 	static Image[] imgG = new Image[4];
 	static Image[] imgR = new Image[4];
+	static final Image imgUP = new Image("/UPdopon.png", false);
+	static final Image imgLW = new Image("/LWdopon.png", false);
 
 	private walkingMan[][] _wm = new walkingMan[2][numOfBox];
 	private byte _mh;//マンホールのフタの位置記号
@@ -58,9 +66,9 @@ public class iterateN extends MainAppli{
 	private int _cnter;//上段、下段の箱を順に動かすためのカウンタ
 	private Color _clr;//人の文字色
 	
-	private boolean _isDopon = false;//マンホールに人が落ちたらtrue、誰も落ちなければfalse
 	private int _point = 0;//点数。助けたら、10点プラス。
 	private int _life = 3;//寿命。最初は3。マンホールに落ちたら、マイナス1。ゼロになったら終了。
+	private Player player = new Player() ;//プレイヤーのコンストラクタ：名前name、ポイントpoint、Life、停止中フラグisStopping
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -68,7 +76,7 @@ public class iterateN extends MainAppli{
 	@Override public void init() {//初期化メソッド
 		setScWidth(WIDTH);
 		setScHeight(HEIGHT);
-		setBackColor(Color.LIGHTBLUE);
+		setBackColor(Color.BEIGE);
 		setCvWidth(WIDTH);
 		setCvHeight(HEIGHT);
 		setFps(60);
@@ -107,14 +115,22 @@ public class iterateN extends MainAppli{
 		th.start();
 	}
 	
-	static void SoundWalk() {	//歩く音from魔王魂
+	static void SoundWalkUP() {	//歩く音、上段
 		sound snd = new sound();
-		snd.str = SndWalk;
+		snd.str = SndwalkUP;
 		Thread th = new Thread(snd);
 		th.start();
 	}
 
-	@Override protected void ofMain(GraphicsContext gc, String player) {
+	static void SoundWalkLW() {	//歩く音、下段
+		sound snd = new sound();
+		snd.str = SndwalkLW;
+		Thread th = new Thread(snd);
+		th.start();
+	}
+
+	@Override protected void ofMain(GraphicsContext gc, Player plyr) {
+		player = plyr;
 		gc.clearRect(0, 0, WIDTH, HEIGHT);	// 全画面をクリア
 		
 		//箱の位置を進める＆一番後ろの箱に50%確率で人を入れる
@@ -123,7 +139,7 @@ public class iterateN extends MainAppli{
 		//上段の場合
 		if(get_cnter()==UP) {
 
-			SoundWalk();//歩く音
+			SoundWalkUP();//歩く音、上段
 			
 			for(int i=0; i<numOfBox; i++) {
 				getwkm(UP,i).update();	//箱の位置を進める
@@ -142,27 +158,37 @@ public class iterateN extends MainAppli{
 					}
 				}
 
-				//マンホール穴の上に居るかどうか、落ちるかどうか判断。
+				//マンホール穴の上に居るかどうか、落ちたかどうか判定
 				if ( getwkm(UP,i).get_pos()==4 //マンホール穴位置(4)の箱に
 						&& getwkm(UP,i).get_isMan()) {//人が居る。
 					
 					//落ちた場合の処理
-					if (get_mh()!=LU) 		//フタがLUに無い場合、落ちる
-						dopon();//落ちる音＋_isDopon=true＋_lifeを減らす
+					if (get_mh()!=LU) { 		//フタがLUに無い場合、落ちる
+						dopon(gc);//落ちる音＋_lifeを減らす
+						getwkm(UP,i).set_dopon(NG);//落ちたﾌﾗｸﾞを立てる
+					}
 
 					//フタがあって、OKだった場合の処理
-					else OK();
+					else {
+						OK();
+						getwkm(UP,i).set_dopon(OK);//OKﾌﾗｸﾞを立てる
+					}
 				}
 					
 				if ( getwkm(UP,i).get_pos()==9 //マンホール穴位置(9)の箱に
 						&& getwkm(UP,i).get_isMan()) {//人が居る。
 					
 					//落ちた場合の処理
-					if (get_mh()!=RU)		//フタがRUに無い場合、落ちる
-						dopon();//落ちる音＋_isDopon=true＋_lifeを減らす
+					if (get_mh()!=RU) {		//フタがRUに無い場合、落ちる
+						dopon(gc);//落ちる音＋_lifeを減らす
+						getwkm(UP,i).set_dopon(NG);//落ちたﾌﾗｸﾞを立てる
+					}
 					
 					//フタがあって、OKだった場合の処理
-					else OK();
+					else {	
+						OK();
+						getwkm(UP,i).set_dopon(OK);//OKﾌﾗｸﾞを立てる
+					}
 				}
 			}
 			set_cnter(LW);
@@ -170,7 +196,7 @@ public class iterateN extends MainAppli{
 			
 		//下段の場合
 		else {
-			SoundWalk();	//歩く音
+			SoundWalkLW();	//歩く音、
 
 			for(int i=0; i<numOfBox; i++) {
 				getwkm(LW,i).update();	//下段の箱の位置を進める
@@ -188,22 +214,32 @@ public class iterateN extends MainAppli{
 						&& getwkm(LW,i).get_isMan()) {//人が居る。
 					
 					//落ちた場合の処理
-					if (get_mh()!=LL) 		//フタがLLに無い場合、落ちる
-						dopon();//落ちる音＋_isDopon=true＋_lifeを減らす
+					if (get_mh()!=LL) { 		//フタがLLに無い場合、落ちる
+						dopon(gc);//落ちる音＋_lifeを減らす
+						getwkm(LW,i).set_dopon(NG);//落ちたﾌﾗｸﾞを立てる
+					}
 
 					//フタがあって、OKだった場合の処理
-					else OK();
+					else {
+						OK();
+						getwkm(LW,i).set_dopon(OK);//OKﾌﾗｸﾞを立てる
+					}
 				}
 					
 				if ( getwkm(LW,i).get_pos()==9 //マンホール穴位置(9)の箱に
 						&& getwkm(LW,i).get_isMan()) {//人が居る。
 					
 					//落ちた場合の処理
-					if (get_mh()!=RL) 	//フタがRLに無い場合、落ちる
-						dopon();//落ちる音＋_isDopon=true＋_lifeを減らす
+					if (get_mh()!=RL) { 	//フタがRLに無い場合、落ちる
+						dopon(gc);//落ちる音＋_lifeを減らす
+						getwkm(LW,i).set_dopon(NG);//落ちたﾌﾗｸﾞを立てる
+					}
 					
 					//フタがあって、OKだった場合の処理
-					else OK();
+					else {
+						OK();
+						getwkm(LW,i).set_dopon(OK);//OKﾌﾗｸﾞを立てる
+					}
 				}
 			}
 			set_cnter(UP);
@@ -234,35 +270,46 @@ public class iterateN extends MainAppli{
 			}
 		}
 		//マンホールのフタを描画
-		gc.setFill(Color.GREEN);// 色を設定（緑色）
+		gc.setFill(Color.RED);// 色を設定（緑色）
 		gc.setFont(new Font("System Bold",48)); 	// フォントの型、サイズを設定
 		gc.fillText("＿", get_mhx(), get_mhy());		// フタを描画
 
 		//LifeとPointを書く
 		gc.setFill(Color.PURPLE);// 色を設定（緑色）
-		gc.setFont(new Font("System Bold",48)); 	// フォントの型、サイズを設定
-		gc.fillText("Life: "+get_life()+"    Point: "+get_point(), 10, 380);
-		gc.setFill(Color.RED);// 色を設定（緑色）
-		gc.fillText(player, 10, 430);
+		gc.setFont(new Font("System Bold",36)); 	// フォントの型、サイズを設定
+		gc.fillText(player.name, 10, 350);
+		gc.setFill(Color.RED);// 色を設定（赤）
+		gc.fillText("Life: "+get_life()+"    Point: "+get_point(), 10, 400);
+		
+		if (player.life == 0) {
+			System.out.println("life=0!");
+			gc.setFill(Color.DARKSALMON);// 色を設定（赤）
+			gc.setFont(new Font("System Bold",36)); 	// フォントの型、サイズを設定
+			gc.fillText("Life is Zero! Press Enter Key.", 10, 450);
+			player.isActive = false;	//プレイヤは動作不可
+//			MainAppli.getInstance().StopGame(player, gc);
+		}
+		
 }
 	
 	//OKだった時の処理
 	public void OK() {
 		SoundOk();			//Okの音
 		set_point(get_point()+10);//10点プラス。
+		player.point = get_point();
 		System.out.println("OK!! POINT:" + _point);
 	}
 	
-	//落ちた時の処理・・・・・いったん止めて、再始動させたい
-	public void dopon() {
-		set_isDopon(true);	//落ちるので_isDopon()=true
+	//落ちた時の処理、どぽん音出力し、lifeを一つ減らす。3回落ちたら止まる。
+	public void dopon(GraphicsContext gc) {
 		SoundDopon();		//落ちる音
+		set_life(get_life() - 1);//寿命をマイナス１する。
+		player.life = get_life();
 		System.out.println("落ちた");
 		if(get_life()==1) {	//残りの寿命が1つしかないときは、
-			System.out.println("終了。POINT:" + get_point());//終了処理
-			Platform.exit();//終了
+			System.out.println("終了。" + player.name +"のPOINT:" + player.point);//終了処理
+
 		} else {
-			set_life(get_life() - 1);//寿命をマイナス１する。
 			System.out.println("LIFE:" + get_life());
 		}
 	}
@@ -274,7 +321,7 @@ public class iterateN extends MainAppli{
 		gc.setFont(new Font("System Bold",48)); 	// フォント型、サイズを設定
 		gc.fillText("＿", get_mhx(), get_mhy());		// フタを水色で上書き
 		
-		gc.setFill(Color.GREEN); 					// 色を設定（緑色）
+		gc.setFill(Color.RED); 					// 色を設定（緑色）
 		gc.setFont(new Font("System Bold",48)); 	// フォント型、サイズを設定
 		switch(e.getCode()) {
 		case Q:										
@@ -334,14 +381,6 @@ public class iterateN extends MainAppli{
 	public void set_mhy(byte index) {
 		if(index==LU || index==RU) this._mhy = UpperY;
 		else this._mhy = LowerY;
-	}
-
-	public boolean get_isDopon() {
-		return _isDopon;
-	}
-
-	public void set_isDopon(boolean _isDopon) {
-		this._isDopon = _isDopon;
 	}
 
 	public int get_life() {
