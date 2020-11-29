@@ -26,11 +26,11 @@
          <font>
             <Font size="25" />
          </font></Button>
-        <Label fx:id="instLabel" layoutX="21.0" layoutY="90.0" minHeight="16" minWidth="69" prefHeight="210.0" prefWidth="346.0" text='Instruction'>
+        <Label fx:id="instLabel" layoutX="21.0" layoutY="90.0" minHeight="16" minWidth="69" prefHeight="210.0" prefWidth="346.0" text="Instruction">
          <font>
             <Font size="14.0" />
          </font></Label>
-      <ImageView fx:id="Photo" fitHeight="117.0" fitWidth="169.0" layoutX="394.0" layoutY="104.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="Photo" fitHeight="117.0" fitWidth="169.0" layoutX="409.0" layoutY="129.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../../../walk01.png" />
          </image></ImageView>
@@ -38,9 +38,13 @@
          <font>
             <Font size="18.0" />
          </font></Label>
-      <TextField fx:id="nameField" layoutX="125.0" layoutY="56.0">
+      <TextField fx:id="nameField" layoutX="64.0" layoutY="54.0">
          <font>
             <Font size="18.0" />
          </font></TextField>
+      <Label fx:id="top10label" layoutX="490.0" layoutY="7.0" text="top10">
+         <font>
+            <Font size="10.0" />
+         </font></Label>
     </children>
 </AnchorPane>

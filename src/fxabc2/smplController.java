@@ -1,5 +1,7 @@
 package fxabc2;
 
+import static fxabc2.iterateN.*;
+
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -12,17 +14,17 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 
 public class smplController implements Initializable{
-	Player player = new Player();
+	Player player = new Player("none", 0, 0, true);
 	String _name;
 	@FXML
-    private Label instLabel ,nameLabel;
+    private Label instLabel ,nameLabel, top10label;
 	@FXML
 	private TextField nameField;
 	@FXML
 	private ImageView Photo;
 	@FXML
 	private Button button;
-    @FXML
+	@FXML
     private void handleButtonAction(ActionEvent event) {
      	player.init();//player初期化
     	System.out.println("You clicked me!");
@@ -45,6 +47,12 @@ public class smplController implements Initializable{
 				+ "\r\n" + "  Ｑ：左上       Ｐ：右上"
 				+ "\r\n" + "  Ａ：左下       Ｌ：右下"
 				);
+		iterateN.Top10FromFile();
+		String st = "Top10:";
+		for(Player p: Top10) {
+			st=st + "\r\n  " + p.name + " : " + p.point;
+		}
+		top10label.setText(st);
 	}
 	
 	//以下、get/set

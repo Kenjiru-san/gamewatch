@@ -12,7 +12,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class MainAppli extends Application {
@@ -81,12 +80,6 @@ public class MainAppli extends Application {
 				}catch(Exception e) {
 				}
 				
-//				if(i==7)	//i=7のとき、音をさせず、箱を半分だけ進める・・を追加したい
-//					Platform.runLater(arg0);
-//				try {
-//					Thread.sleep(70-k);//だんだん早くなる
-//				}catch(Exception e) {
-//				}
 			}
 		});
 		thread.setDaemon(getIsDaemon()); // スレッドをデーモン化
@@ -97,31 +90,6 @@ public class MainAppli extends Application {
 		});
 		scene.setOnKeyReleased(e -> { // キー離上処理
 			ofKeyReleased(e);
-		});
-	}
-	
-	public void StopGame(Player player, GraphicsContext gc) {
-	    Group root = new Group();
-		Scene scene = new Scene(root, getScWidth(), getScHeight(), getBackColor()); // Sceneを作成
-		Canvas canvas = new Canvas(getCvWidth(), getCvHeight()); // Canvasを作成
-		gc = canvas.getGraphicsContext2D(); // GraphicsContextをCamvasに追加
-		root.getChildren().add(canvas); // Canvasを追加
-		stg.setScene(scene); // Sceneを追加
-
-		stg.setTitle("Man Hole Man/Game Over");
-		
-		gc.setFill(Color.DARKGRAY); // 色を設定（ダークグレー）
-		gc.setFont(new Font("System",24)); // フォントサイズを設定
-		gc.fillText(player.name + "のPoint: " + player.point
-				+ "\r\n   Press Any Key to End", 50, 100);
-
-//ここでPlayerのコンストラクタ・データを保存したい
-//ここでPlayerの初期化をしたい
-		
-		stg.show(); // ウィンドウを表示
-		
-		scene.setOnKeyPressed(e -> { // キー押下処理
-			Platform.exit();
 		});
 	}
 	

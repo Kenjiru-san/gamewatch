@@ -1,11 +1,21 @@
 package fxabc2;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable {
 	String name;		//プレイヤーのなまえ
 	int point;			//持っているポイント
 	int life;			//持っているLife
 	boolean isActive;	//動作可能かどうかのフラグ
 	
+	Player(String name, int point, 
+			int life, boolean isActive){
+		this.name = name;
+		this.point = point;
+		this.life = life;
+		this.isActive = isActive;
+	}
+
 	public void init() {
 		setname("none");
 		setpoint(0);

@@ -1,5 +1,18 @@
 package fxabc2;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -68,7 +81,9 @@ public class iterateN extends MainAppli{
 	
 	private int _point = 0;//点数。助けたら、10点プラス。
 	private int _life = 3;//寿命。最初は3。マンホールに落ちたら、マイナス1。ゼロになったら終了。
-	private Player player = new Player() ;//プレイヤーのコンストラクタ：名前name、ポイントpoint、Life、停止中フラグisStopping
+
+	private Player player = new Player("none",0,0,true) ;//プレイヤーのコンストラクタ：名前name、ポイントpoint、Life、停止中フラグisStopping
+	static List<Player> Top10 = new ArrayList<>();//Top10のPointゲッターの履歴
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -100,6 +115,7 @@ public class iterateN extends MainAppli{
 			imgG[i] = new Image("/walkg" + (i+1) + ".png", false);//緑の人の設定
 		for (int i=0; i<4; i++)
 			imgR[i] = new Image("/walkr" + (i+1) + ".png", false);//赤の人の設定
+	
 	}
 	
 	static void SoundOk() {		//マンホールを踏んだ音
@@ -249,14 +265,6 @@ public class iterateN extends MainAppli{
 		for(int i=0;i<numOfBox;i++) {
 			
 			//人を描画
-			//箱番号によって、人の色分け・・3で割ってゼロなら赤、1なら緑、2なら青
-//			if (i%3==0) set_clr(Color.DARKSALMON);
-//			  else if(i%3==1) set_clr(Color.GREEN);
-//			  else set_clr(Color.NAVY);
-			
-//			getwkm(UP,i).draw(gc,get_clr());//上段の箱に人が入っている場合に描画：Ver0
-//			getwkm(LW,i).draw(gc,get_clr());//下段の箱に人が入っている場合に描画：Ver0
-			
 			getwkm(UP,i).drawman(gc,i);//上段の箱に人が入っている場合に描画：Ver1
 			getwkm(LW,i).drawman(gc,i);//下段の箱に人が入っている場合に描画：Ver1
 
@@ -281,16 +289,92 @@ public class iterateN extends MainAppli{
 		gc.setFill(Color.RED);// 色を設定（赤）
 		gc.fillText("Life: "+get_life()+"    Point: "+get_point(), 10, 400);
 		
-		if (player.life == 0) {
-			System.out.println("life=0!");
+		if (player.life == 0) {	// Life=0になると、Game Over
+			System.out.println("life = 0!");
 			gc.setFill(Color.DARKSALMON);// 色を設定（赤）
 			gc.setFont(new Font("System Bold",36)); 	// フォントの型、サイズを設定
-			gc.fillText("Life is Zero! Press Enter Key.", 10, 450);
+			gc.fillText("Game Over! Press Enter Key.", 10, 450);
+			
+			Top10ToFile(player);		//playerを含めてBest10を計算しなおしてファイルに書き込み
 			player.isActive = false;	//プレイヤは動作不可
-//			MainAppli.getInstance().StopGame(player, gc);
+		}
+	}
+	
+	//ポイントTop10をファイルから読み込み、playerを含めてTop10を計算しなおしてファイルに書き込み
+	public void Top10ToFile(Player plyer) {
+		
+		Top10FromFile();//ポイントTop10をファイルから読み込み
+		//fileから読み込んだ値を表示
+		System.out.println("From file:top10.dat");
+		Top10.forEach(p -> 
+			System.out.println(p.getname()+ ": "+ p.point));
+
+		//Top10の最下位とPlayer.pointが同じなら、Playerを優先して10位にする
+		//そうでなければ、ふつうにソートする
+		if(Top10.get(9).point==plyer.point) {
+			Top10.remove(9);//10位を削除
+			Top10.add(plyer);//代わりにplyerを10位として追加
+		}
+		else {
+			Top10.add(plyer);//Top10にplayerを追加
+			Comparator<Player> playerComparator =
+			       Comparator.comparing(Player::getpoint)
+			                  .reversed()
+			                  .thenComparing(Comparator.comparing(Player::getname));
+			List<Player> sortedPlayers = Top10.stream()
+			                  .sorted(playerComparator)
+			                  .collect(Collectors.toList());
+			sortedPlayers.remove(10);//11位を削除
+			Top10.clear();
+			Top10 = sortedPlayers;
 		}
 		
-}
+		//Top10をtop10.datに出力
+		try(FileOutputStream f = new FileOutputStream("top10.dat");
+				BufferedOutputStream b = new BufferedOutputStream(f);
+				ObjectOutputStream out = new ObjectOutputStream(b)){
+			out.writeObject(Top10);
+			System.out.println("Top10：");
+			Top10.forEach(p -> 
+				System.out.println(p.getname()+ ": "+ p.point));
+		} catch ( IOException e ) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void Top10FromFile() {	//過去のTop10をFileから読み込み
+		
+		File file = new File("top10.dat");
+		if(file.exists()) {
+			try(FileInputStream f = new FileInputStream("top10.dat");
+					BufferedInputStream b = new BufferedInputStream(f);
+					ObjectInputStream in = new ObjectInputStream(b)){
+					Top10 = (List<Player>) in.readObject();
+			} catch ( IOException e ) {
+					e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+			}
+		}
+		else {
+			Top10init();
+			try(FileOutputStream f = new FileOutputStream("top10.dat");
+					BufferedOutputStream b = new BufferedOutputStream(f);
+					ObjectOutputStream out = new ObjectOutputStream(b)){
+					out.writeObject(Top10);
+			} catch ( IOException e ) {
+					e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void Top10init(){
+		Top10.clear();
+		Player plyer = new Player("none", 0, 0, true);
+		for(int i=0; i<10; i++) Top10.add(plyer);
+	}
 	
 	//OKだった時の処理
 	public void OK() {
@@ -301,6 +385,8 @@ public class iterateN extends MainAppli{
 	}
 	
 	//落ちた時の処理、どぽん音出力し、lifeを一つ減らす。3回落ちたら止まる。
+		//さらに、今までのTOP10と比較して、TOP10に入っていたら、その旨表示し、
+		//TOP10データを置換して、データを保管する。
 	public void dopon(GraphicsContext gc) {
 		SoundDopon();		//落ちる音
 		set_life(get_life() - 1);//寿命をマイナス１する。
