@@ -64,6 +64,7 @@ public class iterateN extends MainAppli{
 	static final String SndwalkLW = "po.wav";//下段歩く音、電子音
 	static final String SndDopon = "waterdopon.wav";//水に落ちる音
 	static final String SndOk = "ok.wav";//マンホールを踏んだ音
+	static final String SndCong = "congrat.wav";//おめでとう音
 	
 	static Image[] imgN = new Image[4];
 	static Image[] imgB = new Image[4];
@@ -117,6 +118,12 @@ public class iterateN extends MainAppli{
 			imgR[i] = new Image("/walkr" + (i+1) + ".png", false);//赤の人の設定
 	
 	}
+	static void SoundCong() {		//おめでとう音
+		soundc snd = new soundc();
+		snd.str = SndCong;
+		Thread th = new Thread(snd);
+		th.start();
+	}	
 	
 	static void SoundOk() {		//マンホールを踏んだ音
 		sound snd = new sound();
@@ -294,6 +301,13 @@ public class iterateN extends MainAppli{
 			gc.setFill(Color.DARKSALMON);// 色を設定（赤）
 			gc.setFont(new Font("System Bold",36)); 	// フォントの型、サイズを設定
 			gc.fillText("Game Over! Press Enter Key.", 10, 450);
+			
+			if( player.getpoint() >= Top10.get(0).getpoint() ) {
+				SoundCong();
+				gc.setFill(Color.DARKSALMON);// 色を設定（赤）
+				gc.setFont(new Font("System Bold",56)); 	// フォントの型、サイズを設定
+				gc.fillText("You win! Congratulations!", 10, 70);
+			}
 			
 			Top10ToFile(player);		//playerを含めてBest10を計算しなおしてファイルに書き込み
 			player.isActive = false;	//プレイヤは動作不可

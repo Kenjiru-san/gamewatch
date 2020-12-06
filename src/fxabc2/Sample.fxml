@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.effect.Glow?>
+<?import javafx.scene.effect.Light.Distant?>
+<?import javafx.scene.effect.Lighting?>
 <?import javafx.scene.effect.SepiaTone?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -33,7 +35,14 @@
       <ImageView fx:id="Photo" fitHeight="117.0" fitWidth="169.0" layoutX="409.0" layoutY="129.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../../../walk01.png" />
-         </image></ImageView>
+         </image>
+         <effect>
+            <Lighting bumpInput="$null">
+               <light>
+                  <Light.Distant />
+               </light>
+            </Lighting>
+         </effect></ImageView>
       <Label fx:id="nameLabel" layoutX="35.0" layoutY="29.0" text="Your Name">
          <font>
             <Font size="18.0" />
@@ -42,9 +51,14 @@
          <font>
             <Font size="18.0" />
          </font></TextField>
-      <Label fx:id="top10label" layoutX="490.0" layoutY="7.0" text="top10">
+      <Label fx:id="top10label" layoutX="468.0" layoutY="33.0" text="top4-10">
          <font>
-            <Font size="10.0" />
+            <Font size="9.0" />
          </font></Label>
+      <Label fx:id="top3label" layoutX="303.0" layoutY="20.0" text="Top3">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
     </children>
 </AnchorPane>
