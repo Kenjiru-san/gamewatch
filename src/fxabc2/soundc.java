@@ -12,6 +12,7 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+//5秒、ファイル名strの音源ファイルの音を鳴らす
 public class soundc implements Runnable{
 	String str;
 	public void run() {

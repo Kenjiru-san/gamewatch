@@ -81,6 +81,7 @@ public class MainAppli extends Application {
 				}
 				
 			}
+			
 		});
 		thread.setDaemon(getIsDaemon()); // スレッドをデーモン化
 		thread.start(); // スレッドを開始

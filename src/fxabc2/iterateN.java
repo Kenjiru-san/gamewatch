@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -66,12 +67,14 @@ public class iterateN extends MainAppli{
 	static final String SndOk = "ok.wav";//マンホールを踏んだ音
 	static final String SndCong = "congrat.wav";//おめでとう音
 	
-	static Image[] imgN = new Image[4];
-	static Image[] imgB = new Image[4];
-	static Image[] imgG = new Image[4];
-	static Image[] imgR = new Image[4];
-	static final Image imgUP = new Image("/UPdopon.png", false);
-	static final Image imgLW = new Image("/LWdopon.png", false);
+	//人のImageクラスサフィクス0と1が上段（右向き）、2と3が下段（左向き）の絵
+	static Image[] imgN = new Image[4];//黒の人のImageクラス
+	static Image[] imgB = new Image[4];//青の人のImageクラス
+	static Image[] imgG = new Image[4];//緑の人のImageクラス
+	static Image[] imgR = new Image[4];//赤の人のImageクラス
+	
+	static final Image imgUP = new Image("/UPdopon.png", false);//上段の人が落ちた時の絵
+	static final Image imgLW = new Image("/LWdopon.png", false);//下段の人が落ちた時の絵
 
 	private walkingMan[][] _wm = new walkingMan[2][numOfBox];
 	private byte _mh;//マンホールのフタの位置記号
@@ -79,6 +82,7 @@ public class iterateN extends MainAppli{
 	private double _mhy;//マンホールのフタのy座標
 	private int _cnter;//上段、下段の箱を順に動かすためのカウンタ
 	private Color _clr;//人の文字色
+	private String _st2;
 	
 	private int _point = 0;//点数。助けたら、10点プラス。
 	private int _life = 3;//寿命。最初は3。マンホールに落ちたら、マイナス1。ゼロになったら終了。
@@ -89,7 +93,9 @@ public class iterateN extends MainAppli{
 	public static void main(String[] args) {
 		launch(args);
 	}
-	@Override public void init() {//初期化メソッド
+	
+	@Override 
+	public void init() {//初期化メソッド
 		setScWidth(WIDTH);
 		setScHeight(HEIGHT);
 		setBackColor(Color.BEIGE);
@@ -152,7 +158,8 @@ public class iterateN extends MainAppli{
 		th.start();
 	}
 
-	@Override protected void ofMain(GraphicsContext gc, Player plyr) {
+	@Override 
+	protected void ofMain(GraphicsContext gc, Player plyr) {
 		player = plyr;
 		gc.clearRect(0, 0, WIDTH, HEIGHT);	// 全画面をクリア
 		
@@ -284,6 +291,7 @@ public class iterateN extends MainAppli{
 				gc.fillText("＿", (double)j*Space, LowerY);//下段の道路を描画
 			}
 		}
+		
 		//マンホールのフタを描画
 		gc.setFill(Color.RED);// 色を設定（緑色）
 		gc.setFont(new Font("System Bold",48)); 	// フォントの型、サイズを設定
@@ -296,22 +304,85 @@ public class iterateN extends MainAppli{
 		gc.setFill(Color.RED);// 色を設定（赤）
 		gc.fillText("Life: "+get_life()+"    Point: "+get_point(), 10, 400);
 		
-		if (player.life == 0) {	// Life=0になると、Game Over
+		// Life<=0になると、Game Over
+		if (player.life <= 0) {	
 			System.out.println("life = 0!");
-			gc.setFill(Color.DARKSALMON);// 色を設定（赤）
-			gc.setFont(new Font("System Bold",36)); 	// フォントの型、サイズを設定
-			gc.fillText("Game Over! Press Enter Key.", 10, 450);
 			
+			Top10ToFile(player);		//playerを含めてBest10を計算しなおしてファイルに書き込み			
+			player.isActive = false;	//プレイヤは動作不可
+
+			//1位のとき
 			if( player.getpoint() >= Top10.get(0).getpoint() ) {
-				SoundCong();
-				gc.setFill(Color.DARKSALMON);// 色を設定（赤）
-				gc.setFont(new Font("System Bold",56)); 	// フォントの型、サイズを設定
-				gc.fillText("You win! Congratulations!", 10, 70);
+				SoundCong();									//おめでたい音
+				gc.setFill(Color.DARKSALMON);					// 文字色を設定（赤）
+				gc.setFont(new Font("System Bold",48)); 		// フォントの型、サイズを設定
+				gc.fillText("You are Number One! Congratulations!", 10, 70);
+
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			String st1 = Endroll(player);
+
+			set_st2("");
+			List<Player> sbList = Top10.subList(0, 3);
+			int num = 1 ;
+			for(Player p: sbList) {
+				set_st2( get_st2() + "\r\n  " + "Top" + num + "  " + p.name + " : " + p.point + "point");
+				num++;
 			}
 			
-			Top10ToFile(player);		//playerを含めてBest10を計算しなおしてファイルに書き込み
-			player.isActive = false;	//プレイヤは動作不可
+			//アニメーションタイマーで順位と
+			AnimationTimer timer = new AnimationTimer() {
+				//AnimationTimer定義直下でGC描画を記載できない。
+				int x = 400;
+
+				@Override    // 1/60FPS毎に呼び出されるメソッド handle(now) の実装
+				public void handle(long now) { 			// now (ナノ秒単位) から現在時刻を抽出
+					gc.clearRect(0,0,WIDTH,HEIGHT);			//画面消去
+					gc.setFill(Color.DARKSALMON);		// 色を設定（ダークサーモン）
+					gc.setFont(new Font("System Bold",65));// フォントの型、サイズを設定
+
+					//"You won the game!"を右から左に送る
+					gc.fillText(st1, x, 100);	
+					if(x==-600) x=400;	else x=x-2;
+
+					gc.setFill(Color.NAVY);		// 色を設定（ダークサーモン）
+					gc.setFont(new Font("System Bold",36));// フォントの型、サイズを設定
+					gc.fillText(get_st2(), 10, 200);
+
+					gc.setFill(Color.DARKSALMON);// 色を設定（赤）
+					gc.setFont(new Font("System Bold",36)); 	// フォントの型、サイズを設定
+					gc.fillText("Game Over! Press Enter Key.", 10, 450);
+}	
+			};
+			
+			//AnimationTimerを起動
+			timer.start();
 		}
+	}
+	
+	//エンドロールの文字を返す
+	public String Endroll(Player plyer) {
+		String edroll = "";
+
+		if (plyer.getpoint() < Top10.get(9).getpoint()) edroll = "";//11位以下
+		else {
+			if(plyer.getpoint() == Top10.get(0).getpoint()) edroll = "You are Number One!";//1位
+			else {if(plyer.getpoint() == Top10.get(1).getpoint()) edroll = "You are Second!";//2位
+				else {if(plyer.getpoint() == Top10.get(2).getpoint()) edroll = "You are in 3rd place!";
+					else for(int i=3;i<10;i++) {
+						if(plyer.getpoint() == Top10.get(i).getpoint()) {
+							edroll = "You are in " +(i+1) +"th place!";
+						}
+					}
+				}
+			}
+		}
+		return edroll;
 	}
 	
 	//ポイントTop10をファイルから読み込み、playerを含めてTop10を計算しなおしてファイルに書き込み
@@ -351,6 +422,9 @@ public class iterateN extends MainAppli{
 			System.out.println("Top10：");
 			Top10.forEach(p -> 
 				System.out.println(p.getname()+ ": "+ p.point));
+
+			out.close();b.close();f.close();
+			
 		} catch ( IOException e ) {
 			e.printStackTrace();
 		}
@@ -366,6 +440,9 @@ public class iterateN extends MainAppli{
 					BufferedInputStream b = new BufferedInputStream(f);
 					ObjectInputStream in = new ObjectInputStream(b)){
 					Top10 = (List<Player>) in.readObject();
+
+					in.close();b.close();f.close();
+					
 			} catch ( IOException e ) {
 					e.printStackTrace();
 			} catch (ClassNotFoundException e) {
@@ -378,6 +455,9 @@ public class iterateN extends MainAppli{
 					BufferedOutputStream b = new BufferedOutputStream(f);
 					ObjectOutputStream out = new ObjectOutputStream(b)){
 					out.writeObject(Top10);
+
+					out.close();b.close();f.close();
+
 			} catch ( IOException e ) {
 					e.printStackTrace();
 			}
@@ -406,22 +486,17 @@ public class iterateN extends MainAppli{
 		set_life(get_life() - 1);//寿命をマイナス１する。
 		player.life = get_life();
 		System.out.println("落ちた");
-		if(get_life()==1) {	//残りの寿命が1つしかないときは、
-			System.out.println("終了。" + player.name +"のPOINT:" + player.point);//終了処理
-
-		} else {
-			System.out.println("LIFE:" + get_life());
-		}
 	}
 	
 	//押したキーに応じて、マンホールの位置を更新して描画
-	@Override protected void ofKeyPressed(KeyEvent e, GraphicsContext gc) {
+	@Override
+	protected void ofKeyPressed(KeyEvent e, GraphicsContext gc) {
 		//水色でフタを上書き
 		gc.setFill(Color.LIGHTBLUE);// 色を設定（水色）
 		gc.setFont(new Font("System Bold",48)); 	// フォント型、サイズを設定
 		gc.fillText("＿", get_mhx(), get_mhy());		// フタを水色で上書き
 		
-		gc.setFill(Color.RED); 					// 色を設定（緑色）
+		gc.setFill(Color.RED); 					// 色を設定（赤色）
 		gc.setFont(new Font("System Bold",48)); 	// フォント型、サイズを設定
 		switch(e.getCode()) {
 		case Q:										
@@ -432,12 +507,15 @@ public class iterateN extends MainAppli{
 			set_mh(RU); gc.fillText("＿", RX, UpperY); break;
 		case L:
 			set_mh(RL); gc.fillText("＿", RX, LowerY); break;
+//		case SPACE: 
+//	       	MainAppli.getInstance().StartWindow(); break;
 		case ENTER: Platform.exit(); break;
 		default: gc.fillText("＿", get_mhx(), get_mhy()); break;
 		}
 	}
 	
-	@Override protected void ofKeyReleased(KeyEvent e) {
+	@Override
+	protected void ofKeyReleased(KeyEvent e) {
 	}
 
 	//	ゲッター(getter)/セッター(setter)
@@ -505,5 +583,13 @@ public class iterateN extends MainAppli{
 
 	public void set_clr(Color _clr) {
 		this._clr = _clr;
+	}
+
+	public String get_st2() {
+		return _st2;
+	}
+
+	public void set_st2(String _st2) {
+		this._st2 = _st2;
 	}
 }

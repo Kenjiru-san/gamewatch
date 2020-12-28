@@ -48,9 +48,12 @@ public class smplController implements Initializable{
 				+ "\r\n" + "  Ｑ：左上       Ｐ：右上"
 				+ "\r\n" + "  Ａ：左下       Ｌ：右下"
 				);
-		iterateN.Top10FromFile();
+		
+		iterateN.Top10FromFile();		//Top10履歴をファイルから読み込む
 
 		String st = "Top10:";
+
+		//３位までをtop3labelに表示
 		List<Player> sbList = Top10.subList(0, 3);
 		int i=1;
 		for(Player p: sbList) {
@@ -59,6 +62,7 @@ public class smplController implements Initializable{
 		}
 		top3label.setText(st);
 		
+		//４位から１０位までをtop10labelに表示
 		st = "Top4-10";
 		sbList = Top10.subList(3, 10);
 		i=4;
